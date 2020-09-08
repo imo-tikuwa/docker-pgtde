@@ -8,6 +8,8 @@ services:
         environment:
             # 1_testdb_ddl.sql内でCREATE DATABASEするのでこっちはコメントアウト
             # POSTGRES_DB: testdb
+            # 以下の環境変数2つについてDockerfile内でPGTDEのセットアップするときに
+            # postgres/postgresで決め打ちしてるので変えないこと
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
         volumes:

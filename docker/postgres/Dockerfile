@@ -21,6 +21,17 @@ ENV PG_MAJOR 9.6
 ENV PG_VERSION 9.6.19
 ENV PG_SHA256 61f93a94ccddbe0b2d1afaf03f04ba605d8af5b774ff9b830e5adeb50ab55cb0
 
+# for [Transparent Data Encryption for PostgreSQL] ENVs
+# https://github.com/nec-postgres/tdeforpg/wiki/Manual(JA)#linux%E7%89%88%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E6%89%8B%E9%A0%86
+ENV PGSRC /usr/src/postgresql
+ENV PGHOME /usr/local
+ENV TDEHOME /opt/nec/tdeforpg96-fe
+ENV PGPORT 5432
+ENV PGDATA /var/lib/postgresql/data
+ENV PGDATABASE testdb
+ENV PGUSER postgres
+ENV PGPASSWORD postgres
+
 RUN set -eux; \
 	\
 	wget -O postgresql.tar.bz2 "https://ftp.postgresql.org/pub/source/v$PG_VERSION/postgresql-$PG_VERSION.tar.bz2"; \
@@ -106,6 +117,13 @@ RUN set -eux; \
 	make -j "$(nproc)" world; \
 	make install-world; \
 	make -C contrib install; \
+# install Transparent Data Encryption for PostgreSQL Version 1.2.1.0
+	mkdir -p $TDEHOME; \
+	wget -O $TDEHOME.tar.gz "https://github.com/nec-postgres/tdeforpg/archive/v1.2.1.0.tar.gz"; \
+	tar --extract --file $TDEHOME.tar.gz --directory $TDEHOME --strip-components 1; \
+	rm -f $TDEHOME.tar.gz; \
+	cd $TDEHOME/SOURCES/data_encryption; \
+    sh makedencryption.sh 96 $PGSRC; \
 	\
 	runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
