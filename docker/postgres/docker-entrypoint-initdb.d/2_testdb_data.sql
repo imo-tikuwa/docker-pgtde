@@ -16,6 +16,8 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+\connect testdb
+
 --
 -- Data for Name: actor; Type: TABLE DATA; Schema: public; Owner: postgres
 --

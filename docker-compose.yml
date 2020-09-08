@@ -6,6 +6,9 @@ services:
         ports:
             - 15432:5432
         environment:
-            POSTGRES_DB: testdb
+            # 1_testdb_ddl.sql内でCREATE DATABASEするのでこっちはコメントアウト
+            # POSTGRES_DB: testdb
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
+        volumes:
+            - ./docker/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
