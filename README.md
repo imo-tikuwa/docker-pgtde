@@ -71,9 +71,15 @@ docker cp <コンテナID>:/2_testdb_data.sql docker\postgres\docker-entrypoint-
 ```
 
 ---
-ビルドに失敗したコンテナに名前を付けてアクセスする
+ビルドに失敗したコンテナに名前を付けてアクセスする  
 参考：https://qiita.com/mom0tomo/items/35dfacb628df1bd3651e
 ```
 $ docker commit { コンテナID } { コンテナ名を適当に付ける }
 $ docker run --rm -it { 適当につけたコンテナ名 } sh
+```
+
+---
+最初にイメージの作成も行って起動する
+```
+docker-compose up --build
 ```
