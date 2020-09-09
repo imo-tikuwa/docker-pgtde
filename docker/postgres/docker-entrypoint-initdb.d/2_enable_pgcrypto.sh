@@ -3,5 +3,5 @@ set -e
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 \connect testdb;
-create extension pgcrypto;
+CREATE EXTENSION pgcrypto;
 EOSQL

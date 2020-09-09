@@ -249,6 +249,11 @@ docker_temp_server_stop() {
 	pg_ctl -D "$PGDATA" -m fast -w stop
 }
 
+docker_temp_server_restart() {
+	PGUSER="${PGUSER:-postgres}" \
+	pg_ctl -D "$PGDATA" -m fast -w restart
+}
+
 # check arguments for an option that would cause postgres to stop
 # return true if there is one
 _pg_want_help() {
@@ -298,6 +303,13 @@ _main() {
 
 			docker_setup_db
 			docker_process_init_files /docker-entrypoint-initdb.d/*
+
+			# initdbやデータの投入が済んだ状態で「Transparent Data Encryption for PostgreSQL」のインストールコマンドを実行してみる
+			cd $TDEHOME/SOURCES/data_encryption && sh makedencryption.sh 96 $PGSRC
+			ln -s $TDEHOME/SOURCES/data_encryption/96/data_encryption96.so.1.2.1.0 /usr/lib/data_encryption.so
+			sed -i.bak "/#shared_preload_libraries = ''/a # add shared_preload_libraries to postgresql.conf\nshared_preload_libraries='/usr/lib/data_encryption.so'" $PGDATA/postgresql.conf
+			docker_temp_server_restart
+
 
 			docker_temp_server_stop
 			unset PGPASSWORD

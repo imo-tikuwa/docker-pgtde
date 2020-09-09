@@ -70,6 +70,8 @@ RUN set -eux; \
 #		tcl-dev \
 		util-linux-dev \
 		zlib-dev \
+# Required for pgtde build. (makedencryption.shの42行目)
+		patch \
 	; \
 	\
 	cd /usr/src/postgresql; \
@@ -82,6 +84,8 @@ RUN set -eux; \
 # explicitly update autoconf config.guess and config.sub so they support more arches/libcs
 	wget -O config/config.guess 'https://git.savannah.gnu.org/cgit/config.git/plain/config.guess?id=7d3d27baf8107b630586c962c057e22149653deb'; \
 	wget -O config/config.sub 'https://git.savannah.gnu.org/cgit/config.git/plain/config.sub?id=7d3d27baf8107b630586c962c057e22149653deb'; \
+# add pgcrypto symlink.
+	ln -s $PGHOME/lib/postgresql/pgcrypto.so /usr/lib/libpgcrypto.so; \
 # configure options taken from:
 # https://anonscm.debian.org/cgit/pkg-postgresql/postgresql.git/tree/debian/rules?h=9.5
 	./configure \
@@ -122,8 +126,9 @@ RUN set -eux; \
 	wget -O $TDEHOME.tar.gz "https://github.com/nec-postgres/tdeforpg/archive/v1.2.1.0.tar.gz"; \
 	tar --extract --file $TDEHOME.tar.gz --directory $TDEHOME --strip-components 1; \
 	rm -f $TDEHOME.tar.gz; \
-	cd $TDEHOME/SOURCES/data_encryption; \
-    sh makedencryption.sh 96 $PGSRC; \
+# docker-entrypoint.shに移動
+	# cd $TDEHOME/SOURCES/data_encryption; \
+    # sh makedencryption.sh 96 $PGSRC; \
 	\
 	runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
@@ -139,14 +144,14 @@ RUN set -eux; \
 # https://docs.djangoproject.com/en/1.10/ref/databases/#optimizing-postgresql-s-configuration
 		tzdata \
 	; \
-	apk del --no-network .build-deps; \
-	cd /; \
-	rm -rf \
-		/usr/src/postgresql \
-		/usr/local/share/doc \
-		/usr/local/share/man \
-	; \
-	find /usr/local -name '*.a' -delete; \
+	# apk del --no-network .build-deps; \
+	# cd /; \
+	# rm -rf \
+	# 	/usr/src/postgresql \
+	# 	/usr/local/share/doc \
+	# 	/usr/local/share/man \
+	# ; \
+	# find /usr/local -name '*.a' -delete; \
 	\
 	postgres --version
 
