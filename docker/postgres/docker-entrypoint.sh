@@ -308,8 +308,59 @@ _main() {
 			cd $TDEHOME/SOURCES/data_encryption
 			sudo sh makedencryption.sh 96 $PGSRC
 			sudo ln -s $TDEHOME/SOURCES/data_encryption/96/data_encryption96.so.1.2.1.0 /usr/lib/data_encryption.so
+			sudo ln -s /usr/lib/data_encryption.so /usr/lib64/data_encryption.so
 			sudo sed -i.bak "/#shared_preload_libraries = ''/a # add shared_preload_libraries to postgresql.conf\nshared_preload_libraries='/usr/lib/data_encryption.so'" $PGDATA/postgresql.conf
 			docker_temp_server_restart
+			cd $TDEHOME/SOURCES
+# psql: could not connect to server: Connection refusedになる。psqlが起動してない？もしくは接続できない模様
+			expect -c "
+set timeout 20
+spawn sudo sh bin/cipher_setup.sh $PGHOME
+expect \"select menu \[1 - 2\]\"
+send -- \"1\n\"
+expect \"Please enter database server port to connect :\"
+send -- \"$PGPORT\n\"
+expect \"Please enter database user name to connect :\"
+send -- \"$PGUSER\n\"
+expect \"Please enter password for authentication :\"
+send -- \"$PGPASSWORD\n\"
+expect \"Please enter database name to connect :\"
+send -- \"$PGDATABASE\n\"
+expect \"WARN: Transparent data encryption function has already been activated\"
+send -- \x03
+expect \"Please input \[Yes\/No\]\"
+send -- \"Yes\n\"
+expect \"INFO: Transparent data encryption feature has been activated\"
+send -- \x03
+expect \"psql: could not connect to server: Connection refused\"
+send -- \x03
+expect eof
+"
+			expect -c "
+set timeout 20
+spawn sudo sh bin/cipher_key_regist.sh $PGHOME
+expect \"Please enter database server port to connect :\"
+send -- \"$PGPORT\n\"
+expect \"Please enter database user name to connect :\"
+send -- \"$PGUSER\n\"
+expect \"Please enter password for authentication :\"
+send -- \"$PGPASSWORD\n\"
+expect \"Please enter database name to connect :\"
+send -- \"$PGDATABASE\n\"
+expect \"Please enter the current cipher key :\"
+send -- \"$PGTDE_CIPHER\n\"
+expect \"Please enter the new cipher key :\"
+send -- \"$PGTDE_CIPHER\n\"
+expect \"Please retype the new cipher key :\"
+send -- \"$PGTDE_CIPHER\n\"
+expect \"Please enter the algorithm for new cipher key :\"
+send -- \"aes\n\"
+expect \"Are you sure to register new cipher key(y\/n) :\"
+send -- \"y\n\"
+expect \"psql: could not connect to server: Connection refused\"
+send -- \x03
+expect eof
+"
 
 
 			docker_temp_server_stop

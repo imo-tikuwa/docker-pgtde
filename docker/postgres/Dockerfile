@@ -31,6 +31,7 @@ ENV PGDATA /var/lib/postgresql/data
 ENV PGDATABASE testdb
 ENV PGUSER postgres
 ENV PGPASSWORD postgres
+ENV PGTDE_CIPHER NxFwsOzCoIij77JN
 
 RUN set -eux; \
 	\
@@ -85,7 +86,9 @@ RUN set -eux; \
 	wget -O config/config.guess 'https://git.savannah.gnu.org/cgit/config.git/plain/config.guess?id=7d3d27baf8107b630586c962c057e22149653deb'; \
 	wget -O config/config.sub 'https://git.savannah.gnu.org/cgit/config.git/plain/config.sub?id=7d3d27baf8107b630586c962c057e22149653deb'; \
 # add pgcrypto symlink.
+	mkdir -p /usr/lib64; \
 	ln -s $PGHOME/lib/postgresql/pgcrypto.so /usr/lib/libpgcrypto.so; \
+	ln -s /usr/lib/libpgcrypto.so /usr/lib64/libpgcrypto.so; \
 # configure options taken from:
 # https://anonscm.debian.org/cgit/pkg-postgresql/postgresql.git/tree/debian/rules?h=9.5
 	./configure \
@@ -140,7 +143,9 @@ RUN set -eux; \
 		$runDeps \
 		bash \
 		su-exec \
+# pgtdeのセットアップで必要な機能をインストール
 		sudo \
+		expect \
 # tzdata is optional, but only adds around 1Mb to image size and is recommended by Django documentation:
 # https://docs.djangoproject.com/en/1.10/ref/databases/#optimizing-postgresql-s-configuration
 		tzdata \
