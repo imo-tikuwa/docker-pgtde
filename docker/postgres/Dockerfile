@@ -140,10 +140,13 @@ RUN set -eux; \
 		$runDeps \
 		bash \
 		su-exec \
+		sudo \
 # tzdata is optional, but only adds around 1Mb to image size and is recommended by Django documentation:
 # https://docs.djangoproject.com/en/1.10/ref/databases/#optimizing-postgresql-s-configuration
 		tzdata \
 	; \
+# add postgres sudoer.
+	echo "%${PGUSER}    ALL=(ALL)   NOPASSWD:    ALL" >> /etc/sudoers.d/${PGUSER}; \
 	# apk del --no-network .build-deps; \
 	# cd /; \
 	# rm -rf \

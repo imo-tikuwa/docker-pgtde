@@ -305,9 +305,10 @@ _main() {
 			docker_process_init_files /docker-entrypoint-initdb.d/*
 
 			# initdbやデータの投入が済んだ状態で「Transparent Data Encryption for PostgreSQL」のインストールコマンドを実行してみる
-			cd $TDEHOME/SOURCES/data_encryption && sh makedencryption.sh 96 $PGSRC
-			ln -s $TDEHOME/SOURCES/data_encryption/96/data_encryption96.so.1.2.1.0 /usr/lib/data_encryption.so
-			sed -i.bak "/#shared_preload_libraries = ''/a # add shared_preload_libraries to postgresql.conf\nshared_preload_libraries='/usr/lib/data_encryption.so'" $PGDATA/postgresql.conf
+			cd $TDEHOME/SOURCES/data_encryption
+			sudo sh makedencryption.sh 96 $PGSRC
+			sudo ln -s $TDEHOME/SOURCES/data_encryption/96/data_encryption96.so.1.2.1.0 /usr/lib/data_encryption.so
+			sudo sed -i.bak "/#shared_preload_libraries = ''/a # add shared_preload_libraries to postgresql.conf\nshared_preload_libraries='/usr/lib/data_encryption.so'" $PGDATA/postgresql.conf
 			docker_temp_server_restart
 
 
