@@ -83,3 +83,96 @@ $ docker run --rm -it { 適当につけたコンテナ名 } sh
 ```
 docker-compose up --build
 ```
+
+## pgtdeについて手動でセットアップしたコンテナでの動作確認
+cipher_setup.sh、cipher_key_regist.shを実行した後の動作確認 
+
+| | |
+|-|-|
+| cipher_key | NxFwsOzCoIij77JN |
+
+- 登録しておいた暗号化キーで暗号化セッションが開始できることを確認
+- character型のカラムをENCRYPT_TEXT型に変更できることを確認
+- 暗号化セッション中にENCRYPT_TEXT型のカラムを含むSELECTが行えることを確認
+- 暗号化セッション中を終了した接続でENCRYPT_TEXT型のカラムを含むSELECTでエラーとなることを確認(TDE-E0017 could not decrypt data, because key was not set[01])
+- 暗号化セッション中を終了した接続でENCRYPT_TEXT型のカラムを含まないSELECTが行えることを確認
+
+```sql
+$ psql -U postgres testdb
+
+testdb=# select cipher_key_disable_log();
+ cipher_key_disable_log 
+------------------------
+ t
+(1 row)
+
+testdb=# select pgtde_begin_session('NxFwsOzCoIij77JN');
+ pgtde_begin_session
+---------------------
+ t
+(1 row)
+
+testdb=# select cipher_key_enable_log ();
+ cipher_key_enable_log 
+-----------------------
+ t
+(1 row)
+
+testdb=# ALTER TABLE customer ALTER COLUMN email TYPE ENCRYPT_TEXT;
+ALTER TABLE
+
+testdb=# \d customer
+                                          Table "public.customer"
+   Column    |            Type             |                           Modifiers
+-------------+-----------------------------+----------------------------------------------------------------
+ customer_id | integer                     | not null default nextval('customer_customer_id_seq'::regclass)
+ store_id    | smallint                    | not null
+ first_name  | character varying(45)       | not null
+ last_name   | character varying(45)       | not null
+ email       | encrypt_text                |
+ address_id  | smallint                    | not null
+ activebool  | boolean                     | not null default true
+ create_date | date                        | not null default ('now'::text)::date
+ last_update | timestamp without time zone | default now()
+ active      | integer                     |
+Indexes:
+    "customer_pkey" PRIMARY KEY, btree (customer_id)
+    "idx_fk_address_id" btree (address_id)
+    "idx_fk_store_id" btree (store_id)
+    "idx_last_name" btree (last_name)
+Foreign-key constraints:
+    "customer_address_id_fkey" FOREIGN KEY (address_id) REFERENCES address(address_id) ON UPDATE CASCADE ON DELETE RESTRICT
+Referenced by:
+    TABLE "payment" CONSTRAINT "payment_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    TABLE "rental" CONSTRAINT "rental_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON UPDATE CASCADE ON DELETE RESTRICT
+Triggers:
+    last_updated BEFORE UPDATE ON customer FOR EACH ROW EXECUTE PROCEDURE last_updated()
+
+testdb=# select * from customer limit 3;
+ customer_id | store_id | first_name | last_name |                email                | address_id | activebool | create_date |       last_update       | active 
+-------------+----------+------------+-----------+-------------------------------------+------------+------------+-------------+-------------------------+--------
+         524 |        1 | Jared      | Ely       | jared.ely@sakilacustomer.org        |        530 | t          | 2006-02-14  | 2013-05-26 14:49:45.738 |      1
+           1 |        1 | Mary       | Smith     | mary.smith@sakilacustomer.org       |          5 | t          | 2006-02-14  | 2013-05-26 14:49:45.738 |      1
+           2 |        1 | Patricia   | Johnson   | patricia.johnson@sakilacustomer.org |          6 | t          | 2006-02-14  | 2013-05-26 14:49:45.738 |      1
+(3 rows)
+
+testdb=# select pgtde_end_session();
+ pgtde_end_session 
+-------------------
+ t
+(1 row)
+
+testdb=# select * from customer limit 3;
+ERROR:  TDE-E0017 could not decrypt data, because key was not set[01]
+
+testdb=# select customer_id, first_name from customer limit 3;
+ customer_id | first_name 
+-------------+------------
+         524 | Jared
+           1 | Mary
+           2 | Patricia
+(3 rows)
+
+testdb=# select customer_id, email from customer limit 3;
+ERROR:  TDE-E0017 could not decrypt data, because key was not set[01]
+```
