@@ -87,9 +87,7 @@ docker-compose up --build
 ## pgtdeについて手動でセットアップしたコンテナでの動作確認
 cipher_setup.sh、cipher_key_regist.shを実行した後の動作確認 
 
-| | |
-|-|-|
-| cipher_key | NxFwsOzCoIij77JN |
+<table><tr><td>cipher_key</td><td>NxFwsOzCoIij77JN</td></tr></table>
 
 - 登録しておいた暗号化キーで暗号化セッションが開始できることを確認
 - character型のカラムをENCRYPT_TEXT型に変更できることを確認
