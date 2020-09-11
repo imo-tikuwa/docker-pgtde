@@ -12,7 +12,7 @@ if [ -n "$CURRENTPATH" ]; then
     cd $CURRENTPATH
 fi
 
-#set external program(psql) execution path 
+#set external program(psql) execution path
 export PGPATH=$1
 export LD_PRELOAD=${PGPATH}/lib/libpq.so.5
 
@@ -46,7 +46,7 @@ input_psql_param(){
   stty -echo
   read PASS;
   stty echo
-  echo 
+  echo
 
   echo -n 'Please enter database name to connect : '
   read DB;
@@ -152,7 +152,7 @@ fi
 input_psql_param
 
 #connection test
-connection_test  
+connection_test
 if [ $? -ne 0 ];then
   echo "ERROR: Could not connect to the database";
   exit 1;
@@ -163,6 +163,6 @@ CIPHER_EXIST=`psql -t -c "SELECT COUNT(*) FROM PG_TABLES WHERE TABLENAME='${KEYT
 if [ $CIPHER_EXIST -eq 0 ]; then
   echo "ERROR: Transparent data encryption feature has not been activated yet"
   exit 1;
-fi 
+fi
 
 cipher_key_regist

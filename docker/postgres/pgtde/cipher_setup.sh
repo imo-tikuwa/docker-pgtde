@@ -12,7 +12,7 @@ if [ -n "$CURRENTPATH" ]; then
     cd $CURRENTPATH
 fi
 
-#set external program(psql) execution path 
+#set external program(psql) execution path
 export PGPATH=$1
 export LD_PRELOAD=${PGPATH}/lib/libpq.so.5
 
@@ -61,7 +61,7 @@ input_psql_param(){
   stty -echo
   read PASS;
   stty echo
-  echo 
+  echo
 
   echo -n 'Please enter database name to connect : '
   read DB;
@@ -156,12 +156,12 @@ validate(){
   connection_test
   if [ $? -ne 0 ];
   then
-    echo "ERROR: Could not connect to the database";  
+    echo "ERROR: Could not connect to the database";
     exit 1;
   fi
 
   # get PGVERSION
-  PGVERSION=`psql -t -c "show server_version_num;"` 
+  PGVERSION=`psql -t -c "show server_version_num;"`
 
   #check existing of cipher_key_table
   CIPHER_EXIST=`psql -t -c "SELECT COUNT(*) FROM PG_TABLES WHERE TABLENAME='${KEYTBL}';"`
@@ -169,7 +169,7 @@ validate(){
   then
     echo "WARN: Transparent data encryption function has already been activated"
     exit 0;
-  fi   
+  fi
 
 
   #store all activation query to file for execution
@@ -185,7 +185,7 @@ validate(){
   CIPHER_NOEXIST=`psql -t -c "SELECT COUNT(*) FROM PG_TABLES WHERE TABLENAME='${NOKEYTBL}';"`
   if [ $CIPHER_NOEXIST -ne 0 ];
   then
-    #exits -- reactivate 
+    #exits -- reactivate
     VALIDATE_NEW=false
     echo "WARN: Are you sure you want to reactivate  the transparent data encryption feature? "
     decide
@@ -200,7 +200,7 @@ validate(){
     echo "" > "${INSTALLFILE}"
 	#only root can read this file
 	chmod 600 "${INSTALLFILE}"
-    #remove installation file, if installation is terminated abnormally  
+    #remove installation file, if installation is terminated abnormally
     trap 'rm -f "${INSTALLFILE}"; exit 1;' 1 2 3 15
     #rename cipher_key_table_uninst to cipher_key_table
     QUERY="ALTER TABLE \"${NOKEYTBL}\" RENAME TO \"${KEYTBL}\";";
@@ -219,16 +219,16 @@ validate(){
 	#only root can read this file
 	chmod 600 "${INSTALLFILE}"
     #remove installation file, if installation is terminated abnormally
-    trap 'rm -f "${INSTALLFILE}"; exit 1;' 1 2 3 15    
+    trap 'rm -f "${INSTALLFILE}"; exit 1;' 1 2 3 15
     cat "${SCRPATH}/cipher_definition.sql" >> "${INSTALLFILE}"
-    cat "${SCRPATH}/cipher_key_function.sql" >> "${INSTALLFILE}" 
+    cat "${SCRPATH}/cipher_key_function.sql" >> "${INSTALLFILE}"
     echo "GRANT SELECT ON cipher_key_table TO PUBLIC;" >> "${INSTALLFILE}"
   fi
 
   file_exist_check "${SCRPATH}/common_session_create.sql"
   #define session function A
   cat "${SCRPATH}/common_session_create.sql" >> "${INSTALLFILE}"
-	
+
   # add parallel safe setting for PostgreSQL 9.6 and greater
   if [ ${PGVERSION} -ge 90600 ]; then
       file_exist_check "${SCRPATH}/pgtde_parallel_safe_setting.sql"
@@ -241,14 +241,14 @@ validate(){
   then
     printErr >> "${ERRFILE}"
     echo "ERROR: Could not activate  transparent data encryption feature"
-    echo "HINT : Please see ${ERRFILE} for detail" 
+    echo "HINT : Please see ${ERRFILE} for detail"
     rm -f "${INSTALLFILE}"
     exit 1;
   fi
-  
+
   #empty the INSTALLFILE
   echo " " > "${INSTALLFILE}"
-  
+
   #remove empty error log
   rm -rf "${ERRFILE}"
 
@@ -265,13 +265,13 @@ invalidate(){
 
   #input connection parameters for psql
   input_psql_param
-  
+
   #connection test
   connection_test
   if [ $? -ne 0 ];then echo "ERROR: Could not connect to the database";exit 1;fi
 
   #check existence of cipher_key_table
-  CIPHER_EXIST=`psql -t -c "SELECT COUNT(*) FROM PG_TABLES WHERE TABLENAME='${KEYTBL}';"` 
+  CIPHER_EXIST=`psql -t -c "SELECT COUNT(*) FROM PG_TABLES WHERE TABLENAME='${KEYTBL}';"`
   if [ $CIPHER_EXIST -eq 0 ];
   then  #cipher_key_table is not exists
     echo "WARN: Transparent data encryption feature has not been activated yet"
@@ -293,10 +293,10 @@ invalidate(){
   echo "DROP FUNCTION PGTDE_BEGIN_SESSION(TEXT);" >> "${INSTALLFILE}"
   #drop end session function
   echo "DROP FUNCTION PGTDE_END_SESSION();" >> "${INSTALLFILE}"
-  
 
 
-  #rename cipher_key_table 
+
+  #rename cipher_key_table
   QUERY="ALTER TABLE \"${KEYTBL}\" RENAME TO \"${NOKEYTBL}\";";
   echo "${QUERY}" >> "${INSTALLFILE}"
 
@@ -307,7 +307,7 @@ invalidate(){
   then
     printErr >> "${ERRFILE}"
     echo "ERROR: Could not inactivate the transparent data encryption feature"
-    echo "HINT : Please see ${ERRFILE} for detail" 
+    echo "HINT : Please see ${ERRFILE} for detail"
     exit 1;
   fi
   #remove empty error log
@@ -345,13 +345,13 @@ do
   read -p "${prompt}" select
 
   case $select in
-    1) 
+    1)
      validate;break
      ;;
-    2) 
+    2)
      invalidate;break
      ;;
-    *)  
+    *)
       echo "ERROR: Invalid menu number : $select"
       continue;
       ;;
