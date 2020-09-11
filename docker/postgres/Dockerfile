@@ -173,6 +173,10 @@ ENV PGDATA /var/lib/postgresql/data
 RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
 VOLUME /var/lib/postgresql/data
 
+# pgtdeのセットアップスクリプト（cipher_setup.sh、cipher_key_regist.shについてコンテナ内の/tmp以下にコピーする。コピー後、entrypoint.sh内でPGTDEのbin以下にコピーして実行する）
+COPY ./pgtde/init_cipher_setup.sh /tmp
+COPY ./pgtde/init_cipher_key_regist.sh /tmp
+
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
 ENTRYPOINT ["docker-entrypoint.sh"]

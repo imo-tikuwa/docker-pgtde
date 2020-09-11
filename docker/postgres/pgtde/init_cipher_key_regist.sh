@@ -54,7 +54,9 @@ input_psql_param(){
   if [ "${DB}" = "" ];then echo "ERROR: The length of database name must not be zero";exit 1;fi
   IFS="${OLDIFS}"
 
-  export PGHOST=localhost
+# PGHOSTの値はコンテナ名(postgres)となる必要がありそう
+  # export PGHOST=localhost
+
   export PGDATABASE="${DB}"
   export PGPORT="${PORT}"
   export PGPASSWORD="${PASS}"
