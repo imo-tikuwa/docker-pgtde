@@ -27,7 +27,5 @@ expect \"Please enter the algorithm for new cipher key :\"
 send -- \"aes\n\"
 expect \"Are you sure to register new cipher key(y\/n) :\"
 send -- \"y\n\"
-expect \"psql: could not connect to server: Connection refused\"
-send -- \x03
 expect eof
 "

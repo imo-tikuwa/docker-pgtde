@@ -23,9 +23,5 @@ expect \"WARN: Transparent data encryption function has already been activated\"
 send -- \x03
 expect \"Please input \[Yes\/No\]\"
 send -- \"Yes\n\"
-expect \"INFO: Transparent data encryption feature has been activated\"
-send -- \x03
-expect \"psql: could not connect to server: Connection refused\"
-send -- \x03
 expect eof
 "
