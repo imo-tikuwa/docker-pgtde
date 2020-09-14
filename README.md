@@ -1,5 +1,27 @@
 # docker-pgtde
 
+## このリポジトリについて
+[DockerhubのPostgreSQL9.6(apline)公式イメージ](https://github.com/docker-library/postgres/tree/master/9.6/alpine)をベースとして、NECの透過的暗号化機能「Transparent Data Encryption for PostgreSQL（以後PGTDE）」の導入までを自動化しました。
+
+## 使い方
+リポジトリをクローン後、以下を実行
+```
+docker-compose build
+docker-compose up -d
+```
+
+## 詳細
+ - ポートフォワードでホストPCの`15432`ポートを使用します。
+ - PGTDEの暗号化キーはDockerfileの先頭で固定値で`NxFwsOzCoIij77JN`と定義しています。
+ - 以下のファイルで`testdb`データベースを名指ししています。変更したい場合は以下すべて修正が必要です。
+   - [Dockerfile](https://github.com/imo-tikuwa/docker-pgtde/blob/master/docker/postgres/Dockerfile)
+   - [1_testdb_create_database.sql](https://github.com/imo-tikuwa/docker-pgtde/blob/master/docker/postgres/docker-entrypoint-initdb.d/1_testdb_create_database.sql)
+   - [3_testdb_create_table.sql](https://github.com/imo-tikuwa/docker-pgtde/blob/master/docker/postgres/docker-entrypoint-initdb.d/3_testdb_create_table.sql)
+   - [4_testdb_insert_data.sql](https://github.com/imo-tikuwa/docker-pgtde/blob/master/docker/postgres/docker-entrypoint-initdb.d/4_testdb_insert_data.sql)
+
+## 参考
+https://github.com/nec-postgres/tdeforpg/wiki/Manual(JA)
+
 ## memo
 sample/dvdrental.tarをいったん9.6にインポート
 ```
